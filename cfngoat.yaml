@@ -43,6 +43,10 @@ Resources:
       Tags: 
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-ec2" 
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
       UserData:
         Fn::Base64: |
           #!/bin/bash
@@ -54,7 +58,6 @@ Resources:
           export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMAAAKEY
           export AWS_DEFAULT_REGION=us-west-2
           echo "<h1>Deployed via CloudFormation</h1>" | sudo tee /var/www/html/index.html
-
   WebHostStorage:
     # Unencrypted Volume
     Type: AWS::EC2::Volume
@@ -68,10 +71,13 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-ebs"
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
       Encrypted: True
 
   ### CFN Does not Support Volume Snapshot
-
   EBSAttachment:
     Type: AWS::EC2::VolumeAttachment
     Properties:
@@ -99,7 +105,11 @@ Resources:
         FromPort: 0
         ToPort: 0
         CidrIp: 0.0.0.0/0
-
+      Tags:
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   WebVPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -109,7 +119,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-vpc"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   WebSubnet:
     Type: AWS::EC2::Subnet
     Properties:
@@ -123,7 +136,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-subnet"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   WebSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -137,20 +153,25 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-subnet2"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   WebIGW:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-igw"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   InternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       InternetGatewayId: !Ref WebIGW
       VpcId: !Ref WebVPC
-
   WebRTB:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -158,7 +179,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-rtb"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   WebDefaultPublicRoute:
     Type: AWS::EC2::Route
     DependsOn:
@@ -167,19 +191,16 @@ Resources:
       RouteTableId: !Ref WebRTB
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref WebIGW
-
   RTBAssoc:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref WebSubnet
       RouteTableId: !Ref WebRTB
-
   RTBAssoc2:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref WebSubnet2
       RouteTableId: !Ref WebRTB
-
   WebENI:
     Type: AWS::EC2::NetworkInterface
     Properties:
@@ -189,7 +210,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-primary_network_interface"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   VpcFlowLogs:
     Type: AWS::EC2::FlowLog
     Properties:
@@ -198,7 +222,11 @@ Resources:
       LogDestination: !GetAtt FlowBucket.Arn
       LogDestinationType: s3
       TrafficType: ALL
-
+      Tags:
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   FlowBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
@@ -207,11 +235,14 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-flowlogs"
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
 
   #############
   ###  IAM  ###
   #############
-
   User:
     Type: AWS::IAM::User
     Properties:
@@ -221,12 +252,14 @@ Resources:
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-user"
         - Key: Environment
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   AccessKey:
     Type: AWS::IAM::AccessKey
     Properties:
       UserName: !Ref User
-
   UserPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -247,7 +280,6 @@ Resources:
   #############
   ###  KMS  ###
   #############
-
   LogsKey:
     # Key does not have rotation enabled
     Type: AWS::KMS::Key
@@ -264,7 +296,11 @@ Resources:
             AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
           Action: kms:*
           Resource: '*'
-
+      Tags:
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   LogsKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
@@ -274,7 +310,6 @@ Resources:
   ################
   ###  DB App  ###
   ################
-
   DefaultDB:
     Type: AWS::RDS::DBInstance
     DeletionPolicy: Delete
@@ -303,7 +338,10 @@ Resources:
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-rds"
         - Key: Environment
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   DefaultDBOptionGroup:
     Type: AWS::RDS::OptionGroup
     Properties:
@@ -316,7 +354,10 @@ Resources:
           Value: !Sub "og-${AWS::AccountId}-${CompanyName}-${Environment}"
         - Key: Environment
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   DefaultDBParameterGroup:
     Type: AWS::RDS::DBParameterGroup
     Properties:
@@ -330,7 +371,10 @@ Resources:
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-pg"
         - Key: Environment
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   DefaultSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
@@ -344,7 +388,10 @@ Resources:
           Value: !Sub "sg-${AWS::AccountId}-${CompanyName}-${Environment}"
         - Key: Environment
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   DefaultSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -361,7 +408,10 @@ Resources:
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-rds-sg"
         - Key: Environment
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   EC2Profile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -369,7 +419,6 @@ Resources:
       Path: "/"
       Roles:
         - !Ref EC2Role
-
   EC2Role:
     Type: AWS::IAM::Role
     Properties:
@@ -390,7 +439,10 @@ Resources:
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-role"
         - Key: Environment
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   EC2Policy:
     Type: AWS::IAM::Policy
     Properties:
@@ -407,8 +459,6 @@ Resources:
             Resource: "*"
       Roles:
         - !Ref EC2Role
-
-
   DBAppInstance:
     # EC2 have plain text secrets in user data
     Type: AWS::EC2::Instance
@@ -426,6 +476,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-dbapp"
+        - Key: git_org
+          Value: clo-8
+        - Key: git_repo
+          Value: cfngoat
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
@@ -546,7 +600,6 @@ Resources:
   ################
   ###  Lambda  ###
   ################
-
   IAM4Lambda:
     Type: "AWS::IAM::Role"
     Properties:
@@ -567,7 +620,10 @@ Resources:
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis-lambda"
         - Key: Environment
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
-
+        - Key: git_org
+          Value: clo-8
+        - Key: git_repo
+          Value: cfngoat
   AnalysisLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -587,11 +643,14 @@ Resources:
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
         - Key: Environment
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
 
   ############
   ###  S3  ###
   ############
-
   DataBucket:
     # Public, not encrypted, no access logs, no versioning
     Type: AWS::S3::Bucket
@@ -602,9 +661,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-data"
+        - Key: git_org
+          Value: clo-8
+        - Key: git_repo
+          Value: cfngoat
 
   ### TODO - Custom Upload of insecure document
-
   FinancialsBucket:
     # not encrypted, no access logs, no versioning
     Type: AWS::S3::Bucket
@@ -615,7 +677,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-financials"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   OperationsBucket:
     # not encrypted, no access logs
     Type: AWS::S3::Bucket
@@ -628,7 +693,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-operations"
-
+        - Key: git_org
+          Value: clo-8
+        - Key: git_repo
+          Value: cfngoat
   DataScienceBucket:
     # not encrypted
     Type: AWS::S3::Bucket
@@ -644,7 +712,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-data-science"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   LogsBucket:
     # not encrypted
     Type: AWS::S3::Bucket
@@ -662,6 +733,10 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-logs"
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
 
    ########################
    ### Clean S3 Buckets ###
@@ -698,7 +773,10 @@ Resources:
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-cleanup-role"
         - Key: Environment
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
-
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   CleanBucketFunction:
     Type: "AWS::Lambda::Function"
     DependsOn:
@@ -836,37 +914,36 @@ Resources:
             request.write(responseBody);
             request.end();
           }
-
+      Tags:
+        - Key: git_repo
+          Value: cfngoat
+        - Key: git_org
+          Value: clo-8
   CleanFlowBucketOnDelete:
     Type: Custom::cleanupflowbucket
     Properties:
       ServiceToken: !GetAtt CleanBucketFunction.Arn
       BucketName: !Ref FlowBucket
-
   CleanDataBucketOnDelete:
     Type: Custom::cleanupdatabucket
     Properties:
       ServiceToken: !GetAtt CleanBucketFunction.Arn
       BucketName: !Ref DataBucket
-
   CleanFinancialsBucketOnDelete:
     Type: Custom::cleanupfinancialsbucket
     Properties:
       ServiceToken: !GetAtt CleanBucketFunction.Arn
       BucketName: !Ref FinancialsBucket
-
   CleanOperationsBucketOnDelete:
     Type: Custom::cleanupoperationsbucket
     Properties:
       ServiceToken: !GetAtt CleanBucketFunction.Arn
       BucketName: !Ref OperationsBucket
-
   CleanDataScienceBucketOnDelete:
     Type: Custom::cleanupdatasciencebucket
     Properties:
       ServiceToken: !GetAtt CleanBucketFunction.Arn
       BucketName: !Ref DataScienceBucket
-
   CleanLogsBucketOnDelete:
     Type: Custom::cleanuplogsbucket
     Properties:
